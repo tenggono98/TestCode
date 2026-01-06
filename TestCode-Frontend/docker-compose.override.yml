@@ -1,0 +1,19 @@
+version: '3.8'
+
+# Development override configuration
+# This file can be used with: docker-compose -f docker-compose.yml -f docker-compose.override.yml up
+
+services:
+  frontend:
+    environment:
+      - VITE_API_URL=http://localhost:5000
+    volumes:
+      - ./testcode-frontend/src:/app/src
+      - ./testcode-frontend/public:/app/public
+
+  backend:
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./testcode-backend/src:/app/src
+    command: npm run dev
