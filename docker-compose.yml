@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # Frontend Service
+  frontend:
+    build:
+      context: ./TestCode-Frontend
+      dockerfile: Dockerfile
+    container_name: testcode-frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./TestCode-Frontend/.env.production
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - testcode-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend Service
+  backend:
+    build:
+      context: ./TestCode-Backend
+      dockerfile: Dockerfile
+    container_name: testcode-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./TestCode-Backend/.env.production
+    volumes:
+      - ./TestCode-Backend/data:/app/data
+    networks:
+      - testcode-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  testcode-network:
+    driver: bridge
